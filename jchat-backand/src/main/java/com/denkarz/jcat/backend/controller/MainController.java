@@ -9,11 +9,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
-public class HelloController {
+public class MainController {
   final UserRepository userRepository;
   final User user = new User();
 
-  public HelloController(UserRepository userRepository) {
+  public MainController(UserRepository userRepository) {
     this.userRepository = userRepository;
     this.user.setNickname("anon");
     this.user.setPassword("123ee");
@@ -22,7 +22,7 @@ public class HelloController {
   }
 
   @CrossOrigin
-  @RequestMapping(value = "/", method = RequestMethod.GET, produces = "application/json")
+  @RequestMapping(value = "/test", method = RequestMethod.GET, produces = "application/json")
   @ResponseBody
   User index() {
     return userRepository.save(this.user);

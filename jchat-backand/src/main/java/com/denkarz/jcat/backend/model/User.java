@@ -9,10 +9,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
-import java.util.Calendar;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.Objects;
+import java.util.*;
 
 @Entity
 @Table(name = "users")
@@ -46,7 +43,6 @@ public class User {
   @Column(name = "last_name")
   private String lastName;
 
-
   @NotNull(message = "")
   @DateTimeFormat(pattern = "yyyy-MM-dd")
   @Past
@@ -68,6 +64,13 @@ public class User {
   @JsonIgnore
   private String password;
 
+  @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
+  @CollectionTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"))
+  @Enumerated(EnumType.STRING)
+  private Set<Role> roles;
+
+  private boolean active;
+
   public User() {
   }
 
@@ -75,7 +78,7 @@ public class User {
     return id;
   }
 
-  public void setId(final String id) {
+  public void setId(String id) {
     this.id = id;
   }
 
@@ -83,7 +86,7 @@ public class User {
     return nickname;
   }
 
-  public void setNickname(final String nickname) {
+  public void setNickname(String nickname) {
     this.nickname = nickname;
   }
 
@@ -91,7 +94,7 @@ public class User {
     return firstName;
   }
 
-  public void setFirstName(final String firstName) {
+  public void setFirstName(String firstName) {
     this.firstName = firstName;
   }
 
@@ -99,7 +102,7 @@ public class User {
     return lastName;
   }
 
-  public void setLastName(final String lastName) {
+  public void setLastName(String lastName) {
     this.lastName = lastName;
   }
 
@@ -115,26 +118,41 @@ public class User {
     return birthDate;
   }
 
-  public void setBirthDate(final Date birthDate) {
+  public void setBirthDate(Date birthDate) {
     this.birthDate = birthDate;
   }
 
-  public String getEMail() {
+  public String getEmail() {
     return email;
   }
 
-  public void setEMail(final String eMail) {
-    this.email = eMail;
+  public void setEmail(String email) {
+    this.email = email;
   }
 
   public String getPassword() {
     return password;
   }
 
-  public void setPassword(final String password) {
+  public void setPassword(String password) {
     this.password = password;
   }
 
+  public Set<Role> getRoles() {
+    return roles;
+  }
+
+  public void setRoles(Set<Role> roles) {
+    this.roles = roles;
+  }
+
+  public boolean isActive() {
+    return active;
+  }
+
+  public void setActive(boolean active) {
+    this.active = active;
+  }
 
   @Override
   public final int hashCode() {
@@ -184,7 +202,7 @@ public class User {
             + "Age: "
             + this.getAge(this.getBirthDate()) + '\n'
             + "E-Mail: "
-            + this.getEMail() + '\n'
+            + this.getEmail() + '\n'
             + "B-Day: "
             + this.getBirthDate().toString() + '\n';
   }

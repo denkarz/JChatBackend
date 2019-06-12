@@ -7,15 +7,10 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UserRepository extends CrudRepository<User, Long> {
-  /**
-   * Find User by nick.
-   *
-   * @param name nickname.
-   * @return User.
-   */
+
   @Query(value = "SELECT *"
           + " FROM Users users"
-          + " WHERE users.nickname = ?1", nativeQuery = true)
-  User findByNick(String name);
+          + " WHERE users.email = ?1", nativeQuery = true)
+  User findByEmail(String email);
 
 }
