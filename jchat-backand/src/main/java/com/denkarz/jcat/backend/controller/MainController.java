@@ -34,5 +34,4 @@ public class MainController {
   Iterable<User> hello() {
     return userRepository.findAll();
   }
-
 }
