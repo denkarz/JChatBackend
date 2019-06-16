@@ -32,9 +32,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .logout()
             .permitAll();
     http
+            // Todo: Enable csrf
             .cors()
             .and()
-            // Todo: Enable csrf
             .csrf().disable();
   }
 

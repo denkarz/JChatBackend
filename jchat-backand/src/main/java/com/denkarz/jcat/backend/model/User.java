@@ -14,7 +14,7 @@ import java.util.*;
 @Entity
 @Table(name = "users")
 public class User {
-  static final int MIN_SIZE = 3;
+  static final int MIN_SIZE = 2;
   private static final int HASH = 5;
   /**
    * ID of entity in database.
@@ -38,7 +38,7 @@ public class User {
   @Column(name = "first_name")
   private String firstName;
 
-  @NotNull(message = "First Name Should Be Entered")
+  @NotNull(message = "Last Name Should Be Entered")
   @Size(min = MIN_SIZE, message = "Size Of ")
   @Column(name = "last_name")
   private String lastName;
@@ -55,7 +55,7 @@ public class User {
           + "*@(?:(?:\\[?(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))\\.)"
           + "{3}(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\]?)|(?:[a-zA-Z0-9-]+\\.)"
           + "+(?:[a-zA-Z]){2,}\\.?)$", message = "")
-  @Column(unique = true, name = "e_mail")
+  @Column(unique = true, name = "email")
   private String email;
 
   @NotNull(message = "")
@@ -63,6 +63,9 @@ public class User {
   @Column(name = "password")
   @JsonIgnore
   private String password;
+
+  //поле пароля при регистрации
+  private String firstPassword;
 
   @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
   @CollectionTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"))
@@ -136,6 +139,14 @@ public class User {
 
   public void setPassword(String password) {
     this.password = password;
+  }
+
+  public String getFirstPassword() {
+    return firstPassword;
+  }
+
+  public void setFirstPassword(String firstPassword) {
+    this.firstPassword = firstPassword;
   }
 
   public Set<Role> getRoles() {
