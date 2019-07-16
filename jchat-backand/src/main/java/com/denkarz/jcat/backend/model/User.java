@@ -1,9 +1,14 @@
 package com.denkarz.jcat.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
-import org.hibernate.annotations.GenericGenerator;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -12,44 +17,23 @@ import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.util.*;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "users")
-public class User {
-  static final int MIN_SIZE = 2;
+@Data
+@JsonPropertyOrder(alphabetic = true)
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class User extends BaseEntity implements UserDetails {
   private static final int HASH = 5;
-  /**
-   * ID of entity in database.
-   */
-  @Column(name = "id")
-  @Id
-  @GeneratedValue(generator = "UUID")
-  @GenericGenerator(
-          name = "UUID",
-          strategy = "org.hibernate.id.UUIDGenerator"
-  )
-  private String id;
 
-  @NotNull(message = "Nickname Should Be Entered")
-  @Size(min = MIN_SIZE, message = "")
-  @Column(unique = true, name = "nickname")
-  private String nickname;
-
-  @NotNull(message = "First Name Should Be Entered")
-  @Size(min = MIN_SIZE, message = "Size Of ")
-  @Column(name = "first_name")
-  private String firstName;
-
-  @NotNull(message = "Last Name Should Be Entered")
-  @Size(min = MIN_SIZE, message = "Size Of ")
-  @Column(name = "last_name")
-  private String lastName;
+  @Column(name = "active")
+  private boolean active;
 
   @NotNull(message = "")
   @DateTimeFormat(pattern = "yyyy-MM-dd")
   @Past
   @Column(name = "birth_date")
   private Date birthDate;
-
 
   @NotNull(message = "E-Mail Should Be Entered\"")
   @Pattern(regexp = "^(?:[a-zA-Z0-9_'^&/+-])+(?:\\.(?:[a-zA-Z0-9_'^&/+-])+)"
@@ -58,6 +42,24 @@ public class User {
           + "+(?:[a-zA-Z]){2,}\\.?)$", message = "")
   @Column(unique = true, name = "email")
   private String email;
+
+  @NotNull(message = "First Name Should Be Entered")
+  @Size(min = MIN_SIZE, message = "Size Of ")
+  @Column(name = "first_name")
+  private String firstName;
+
+  @Enumerated(EnumType.ORDINAL)
+  private Gender gender;
+
+  @NotNull(message = "Last Name Should Be Entered")
+  @Size(min = MIN_SIZE, message = "Size Of ")
+  @Column(name = "last_name")
+  private String lastName;
+
+  @NotNull(message = "Nickname Should Be Entered")
+  @Size(min = MIN_SIZE, message = "")
+  @Column(unique = true, name = "nickname")
+  private String nickname;
 
   @NotNull(message = "Password Should Be Entered")
   @Pattern(regexp = "(?=^.{8,}$)((?=.*\\d)|(?=.*\\W+))(?![.\\n])(?=.*[A-Z])(?=.*[a-z]).*$", message = "")
@@ -70,46 +72,6 @@ public class User {
   @Enumerated(EnumType.STRING)
   private Set<Role> roles;
 
-  @Enumerated(EnumType.ORDINAL)
-  private Gender gender;
-
-  private boolean active;
-
-  public User() {
-  }
-
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
-
-  public String getNickname() {
-    return nickname;
-  }
-
-  public void setNickname(String nickname) {
-    this.nickname = nickname;
-  }
-
-  public String getFirstName() {
-    return firstName;
-  }
-
-  public void setFirstName(String firstName) {
-    this.firstName = firstName;
-  }
-
-  public String getLastName() {
-    return lastName;
-  }
-
-  public void setLastName(String lastName) {
-    this.lastName = lastName;
-  }
-
   @JsonProperty("age")
   public byte getAge() {
     Calendar dob = Calendar.getInstance();
@@ -119,105 +81,48 @@ public class User {
     return (byte) (currentDate.get(Calendar.YEAR) - dob.get(Calendar.YEAR));
   }
 
-  public Date getBirthDate() {
-    return birthDate;
-  }
-
-  public void setBirthDate(Date birthDate) {
-    this.birthDate = birthDate;
-  }
-
-  public String getEmail() {
-    return email;
-  }
-
   public void setEmail(String email) {
     this.email = email.toLowerCase();
   }
 
-  public String getPassword() {
-    return password;
-  }
-
-  public void setPassword(String password) {
-    this.password = password;
-  }
-
-  public Set<Role> getRoles() {
-    return roles;
-  }
-
-  public Gender getGender() {
-    return gender;
-  }
-
-  public void setGender(Gender gender) {
-    this.gender = gender;
-  }
-
-  public void setRoles(Set<Role> roles) {
-    this.roles = roles;
-  }
-
-  public boolean isActive() {
-    return active;
-  }
-
-  public void setActive(boolean active) {
-    this.active = active;
+  public void setNickname(String nickname) {
+    this.nickname = nickname.toLowerCase();
   }
 
   @Override
-  public final int hashCode() {
-    return HASH;
+  @JsonProperty(access = Access.WRITE_ONLY)
+  public Collection<? extends GrantedAuthority> getAuthorities() {
+    return null;
   }
 
   @Override
-  public final boolean equals(final Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    final User other = (User) obj;
-    if (!Objects.equals(this.nickname, other.nickname)) {
-      return false;
-    }
-    if (!Objects.equals(this.firstName, other.firstName)) {
-      return false;
-    }
-    if (!Objects.equals(this.lastName, other.lastName)) {
-      return false;
-    }
-    if (!Objects.equals(this.email, other.email)) {
-      return false;
-    }
-    if (!Objects.equals(this.password, other.password)) {
-      return false;
-    }
-    return Objects.equals(this.birthDate, other.birthDate);
+  @JsonProperty(access = Access.WRITE_ONLY)
+  public String getUsername() {
+    return this.getNickname();
   }
 
   @Override
-  public final String toString() {
-    return "User's ID: " + this.getId()
-            + '\n'
-            + "NickName: "
-            + this.getNickname() + '\n'
-            + "First Name: "
-            + this.getFirstName() + '\n'
-            + "Last Name: "
-            + this.getLastName() + '\n'
-            + "Age: "
-            + this.getAge() + '\n'
-            + "E-Mail: "
-            + this.getEmail() + '\n'
-            + "B-Day: "
-            + this.getBirthDate().toString() + '\n';
+  @JsonProperty(access = Access.WRITE_ONLY)
+  public boolean isAccountNonExpired() {
+    return true;
+  }
+
+  @Override
+  @JsonProperty(access = Access.WRITE_ONLY)
+  public boolean isAccountNonLocked() {
+    return true;
+  }
+
+  @Override
+  @JsonProperty(access = Access.WRITE_ONLY)
+  public boolean isCredentialsNonExpired() {
+    return true;
+  }
+
+  @Override
+  @JsonProperty(access = Access.WRITE_ONLY)
+  public boolean isEnabled() {
+    return isActive();
   }
 
   public static class NicknameComparator implements Comparator<User> {

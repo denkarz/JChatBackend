@@ -1,5 +1,6 @@
 package com.denkarz.jcat.backend.config;
 
+import com.denkarz.jcat.backend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +18,8 @@ import javax.sql.DataSource;
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   @Autowired
   private DataSource dataSource;
+  @Autowired
+  private UserService userService;
 
   @Override
   protected void configure(HttpSecurity http) throws Exception {
@@ -45,12 +48,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   }
   @Override
   protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-    auth.jdbcAuthentication()
-            .dataSource(dataSource)
-            .passwordEncoder(this.passwordEncoder())
-            .usersByUsernameQuery("select email, password, active from users where nickname=?")
-            .authoritiesByUsernameQuery("select u.email, u.roles " +
-                    "from users u inner join user_role ur " +
-                    "on u.id=ur.user_id where u.email=?");
+    auth.userDetailsService(userService)
+            .passwordEncoder(this.passwordEncoder());
+
   }
 }

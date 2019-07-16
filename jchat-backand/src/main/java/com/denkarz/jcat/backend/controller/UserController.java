@@ -11,12 +11,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
 @Controller
+@CrossOrigin
 public class UserController {
 
   @Autowired
   private UserRepository userRepository;
 
-  @CrossOrigin
   @RequestMapping(value = "/profile", method = RequestMethod.GET, produces = "application/json")
   @ResponseBody
   public ResponseEntity profile(@RequestParam(value = "id") String id) {
