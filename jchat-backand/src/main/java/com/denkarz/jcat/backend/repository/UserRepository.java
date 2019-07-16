@@ -5,12 +5,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
-public interface UserRepository extends CrudRepository<User, Long> {
+public interface UserRepository extends CrudRepository<User, String> {
 
   @Query(value = "SELECT *"
           + " FROM Users users"
           + " WHERE users.email = ?1", nativeQuery = true)
-  User findByEmail(String email);
+  Optional<User> findByEmail(String email);
 
 }

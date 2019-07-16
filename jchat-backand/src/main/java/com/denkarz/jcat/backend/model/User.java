@@ -1,6 +1,7 @@
 package com.denkarz.jcat.backend.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -28,7 +29,7 @@ public class User {
   )
   private String id;
 
-  @NotNull(message = "")
+  @NotNull(message = "Nickname Should Be Entered")
   @Size(min = MIN_SIZE, message = "")
   @Column(unique = true, name = "nickname")
   private String nickname;
@@ -50,7 +51,7 @@ public class User {
   private Date birthDate;
 
 
-  @NotNull(message = "")
+  @NotNull(message = "E-Mail Should Be Entered\"")
   @Pattern(regexp = "^(?:[a-zA-Z0-9_'^&/+-])+(?:\\.(?:[a-zA-Z0-9_'^&/+-])+)"
           + "*@(?:(?:\\[?(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))\\.)"
           + "{3}(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\]?)|(?:[a-zA-Z0-9-]+\\.)"
@@ -58,19 +59,19 @@ public class User {
   @Column(unique = true, name = "email")
   private String email;
 
-  @NotNull(message = "")
+  @NotNull(message = "Password Should Be Entered")
   @Pattern(regexp = "(?=^.{8,}$)((?=.*\\d)|(?=.*\\W+))(?![.\\n])(?=.*[A-Z])(?=.*[a-z]).*$", message = "")
   @Column(name = "password")
-  @JsonIgnore
+  @JsonProperty(access = Access.WRITE_ONLY)
   private String password;
-
-  //поле пароля при регистрации
-  private String firstPassword;
 
   @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
   @CollectionTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"))
   @Enumerated(EnumType.STRING)
   private Set<Role> roles;
+
+  @Enumerated(EnumType.ORDINAL)
+  private Gender gender;
 
   private boolean active;
 
@@ -109,9 +110,10 @@ public class User {
     this.lastName = lastName;
   }
 
-  public byte getAge(final Date birthDate) {
+  @JsonProperty("age")
+  public byte getAge() {
     Calendar dob = Calendar.getInstance();
-    dob.setTime(birthDate);
+    dob.setTime(this.birthDate);
     Calendar currentDate = Calendar.getInstance();
     currentDate.setTime(new Date());
     return (byte) (currentDate.get(Calendar.YEAR) - dob.get(Calendar.YEAR));
@@ -130,7 +132,7 @@ public class User {
   }
 
   public void setEmail(String email) {
-    this.email = email;
+    this.email = email.toLowerCase();
   }
 
   public String getPassword() {
@@ -141,16 +143,16 @@ public class User {
     this.password = password;
   }
 
-  public String getFirstPassword() {
-    return firstPassword;
-  }
-
-  public void setFirstPassword(String firstPassword) {
-    this.firstPassword = firstPassword;
-  }
-
   public Set<Role> getRoles() {
     return roles;
+  }
+
+  public Gender getGender() {
+    return gender;
+  }
+
+  public void setGender(Gender gender) {
+    this.gender = gender;
   }
 
   public void setRoles(Set<Role> roles) {
@@ -211,7 +213,7 @@ public class User {
             + "Last Name: "
             + this.getLastName() + '\n'
             + "Age: "
-            + this.getAge(this.getBirthDate()) + '\n'
+            + this.getAge() + '\n'
             + "E-Mail: "
             + this.getEmail() + '\n'
             + "B-Day: "
