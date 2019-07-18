@@ -36,11 +36,11 @@ public class LoginController {
     return ResponseEntity.status(HttpStatus.CONFLICT).body("user_not_exists");
   }
 
-
+  @CrossOrigin
   @RequestMapping(value = "/sign_up", method = RequestMethod.POST, produces = "application/json")
   @ResponseBody
   public ResponseEntity signUp(@RequestBody User user) {
-    return userService.userRegistration(user);
+    return userService.usrRegistration(user);
   }
 
 //  @RequestMapping(value = "/forget", method = RequestMethod.GET, produces = "application/json")
