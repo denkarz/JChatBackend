@@ -12,11 +12,11 @@ import javax.validation.constraints.Pattern;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class AuthenticationUser extends BaseEntity {
-  @NotNull(message = "E-Mail should be entered")
+  @NotNull(message = "Email should be entered")
   @Pattern(regexp = "^(?:[a-zA-Z0-9_'^&/+-])+(?:\\.(?:[a-zA-Z0-9_'^&/+-])+)"
           + "*@(?:(?:\\[?(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))\\.)"
           + "{3}(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\]?)|(?:[a-zA-Z0-9-]+\\.)"
-          + "+(?:[a-zA-Z]){2,}\\.?)$", message = "Email isn't correct")
+          + "+(?:[a-zA-Z]){2,}\\.?)$", message = "Email isnt correct")
   @Column(unique = true, name = "email")
   protected String email;
 

@@ -4,7 +4,6 @@ import com.denkarz.jcat.backend.model.user.AuthenticationUser;
 import com.denkarz.jcat.backend.model.user.User;
 import com.denkarz.jcat.backend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -45,27 +44,4 @@ public class LoginController {
                                           BindingResult bindingResult) {
     return userService.registrationSetup(authUser, bindingResult);
   }
-
-  /**
-   * Проверяем наличие пользоваеля. и разрешаем дальнейшую регистрацию
-   *
-   * @param email user's mail
-   * @return status
-   */
-  @GetMapping(value = "/has_mail", produces = "application/json")
-  @ResponseBody
-  public ResponseEntity hasMail(@RequestParam(value = "email") String email) {
-    if (userService.hasMail(email)) {
-      return ResponseEntity.status(HttpStatus.OK).body("ok");
-    }
-    return ResponseEntity.status(HttpStatus.CONFLICT).body("user_exists");
-  }
-
-  // Метод для отладки
-  @RequestMapping(value = "/get", method = RequestMethod.GET, produces = "application/json")
-  @ResponseBody
-  Iterable<User> hello() {
-    return userService.testRequest();
-  }
-
 }

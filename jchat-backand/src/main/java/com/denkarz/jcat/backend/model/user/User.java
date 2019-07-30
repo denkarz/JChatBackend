@@ -35,7 +35,7 @@ public class User extends AuthenticationUser implements UserDetails {
   private Date birthDate;
 
   @NotNull(message = "First name should be entered")
-  @Size(min = MIN_SIZE, message = "First name size less then " + MIN_SIZE)
+  @Size(min = MIN_SIZE, message = "First name size is less then " + MIN_SIZE)
   @Column(name = "first_name")
   private String firstName;
 
@@ -43,12 +43,12 @@ public class User extends AuthenticationUser implements UserDetails {
   private Gender gender;
 
   @NotNull(message = "Last name should be entered")
-  @Size(min = MIN_SIZE, message = "Last name size less then " + MIN_SIZE)
+  @Size(min = MIN_SIZE, message = "Last name size is less then " + MIN_SIZE)
   @Column(name = "last_name")
   private String lastName;
 
-  @NotNull(message = "Nickname should be entered")
-  @Size(min = (MIN_SIZE + 1), message = "Nickname size less then" + (MIN_SIZE + 1))
+  @NotNull(message = "Nick name should be entered")
+  @Size(min = (MIN_SIZE + 1), message = "Nickname size is less then" + (MIN_SIZE + 1))
   @Column(unique = true, name = "nickname")
   private String nickname;
 

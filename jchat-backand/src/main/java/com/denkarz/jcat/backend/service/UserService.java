@@ -37,7 +37,7 @@ public class UserService implements UserDetailsService {
     Optional<User> userFromDb = userRepository.findByEmail(user.getEmail());
     if (userFromDb.isPresent()) {
       // ToDo: add logger for error
-      return ResponseEntity.status(HttpStatus.CONFLICT).body("{\"emailError\": \"user_exists\"}");
+      return ResponseEntity.status(HttpStatus.CONFLICT).body("{\"emailError\": \"email_in_use\"}");
     }
     user.setActive(true);
     // ToDo: replace for multiple roles
@@ -77,7 +77,7 @@ public class UserService implements UserDetailsService {
       log.info("Login as {}", userFromDb.get());
       return ResponseEntity.status(HttpStatus.OK).body(userFromDb);
     }
-    return ResponseEntity.status(HttpStatus.CONFLICT).body("{\"emailError\": \"user_not_exists\"}");
+    return ResponseEntity.status(HttpStatus.CONFLICT).body("{\"emailError\": \"user_not_found\"}");
   }
 
   public Iterable<User> testRequest() {
@@ -93,6 +93,6 @@ public class UserService implements UserDetailsService {
     if (this.hasMail(authUser.getEmail())) {
       return ResponseEntity.status(HttpStatus.OK).body("ok");
     }
-    return ResponseEntity.status(HttpStatus.CONFLICT).body("{\"emailError\": \"user_exists\"}");
+    return ResponseEntity.status(HttpStatus.CONFLICT).body("{\"emailError\": \"email_in_use\"}");
   }
 }

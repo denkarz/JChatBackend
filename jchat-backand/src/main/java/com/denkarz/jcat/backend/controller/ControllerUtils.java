@@ -29,7 +29,7 @@ public class ControllerUtils {
 
   private static String parseErr(String errorMessage) {
     String prettifyErrorMessage = errorMessage.toLowerCase().replaceAll("\\s", "_");
-    Pattern p = Pattern.compile("^([\\w-]+\\s?){1,4}");   // the pattern to search for
+    Pattern p = Pattern.compile("^([\\w-]+\\s?){1,5}");
     Matcher m = p.matcher(prettifyErrorMessage);
     if (m.find()) {
       prettifyErrorMessage = m.group(1);
