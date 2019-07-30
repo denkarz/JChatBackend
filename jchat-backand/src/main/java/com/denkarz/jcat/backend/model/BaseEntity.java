@@ -5,19 +5,18 @@ import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
+import javax.persistence.*;
 import java.util.Date;
 
 
 @MappedSuperclass
 @Data
 @EqualsAndHashCode(of = {"id"})
-public class BaseEntity {
-  static final int MIN_SIZE = 2;
+@EntityListeners(AuditingEntityListener.class)
+public abstract class BaseEntity {
+  protected static final int MIN_SIZE = 2;
 
   /**
    * ID of entity in database.
@@ -29,13 +28,13 @@ public class BaseEntity {
           name = "UUID",
           strategy = "org.hibernate.id.UUIDGenerator"
   )
-  private String id;
+  protected String id;
 
   @CreatedDate
   @Column(name = "created")
-  private Date createdAt;
+  protected Date createdAt;
 
   @LastModifiedDate
   @Column(name = "updated")
-  private Date updatedAt;
+  protected Date updatedAt;
 }

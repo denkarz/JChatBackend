@@ -24,27 +24,18 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   @Override
   protected void configure(HttpSecurity http) throws Exception {
     http
+            // Todo: Enable csrf
+            .httpBasic().disable()
+            .csrf().disable()
             .addFilterBefore(new CORSFilter(), ChannelProcessingFilter.class)
             .authorizeRequests()
-            .antMatchers("/*").permitAll()
-            .anyRequest().authenticated()
-            .and()
-            .formLogin()
-            .permitAll()
-            .and()
-            .logout()
-            .permitAll();
-    http
-            // Todo: Enable csrf
-            .cors()
-            .and()
-            .csrf().disable();
+            .antMatchers("/**").permitAll()
+            .anyRequest().authenticated();
   }
 
   @Bean
   public BCryptPasswordEncoder passwordEncoder() {
-    BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
-    return bCryptPasswordEncoder;
+    return new BCryptPasswordEncoder();
   }
   @Override
   protected void configure(AuthenticationManagerBuilder auth) throws Exception {

@@ -1,4 +1,4 @@
-package com.denkarz.jcat.backend.model;
+package com.denkarz.jcat.backend.model.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -13,7 +13,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
-import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.util.*;
 
@@ -23,49 +22,35 @@ import java.util.*;
 @Data
 @JsonPropertyOrder(alphabetic = true)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class User extends BaseEntity implements UserDetails {
+public class User extends AuthenticationUser implements UserDetails {
   private static final int HASH = 5;
 
   @Column(name = "active")
   private boolean active;
 
-  @NotNull(message = "")
+  @NotNull(message = "Birth date should be entered")
   @DateTimeFormat(pattern = "yyyy-MM-dd")
-  @Past
+  @Past(message = "Must be in past")
   @Column(name = "birth_date")
   private Date birthDate;
 
-  @NotNull(message = "E-Mail Should Be Entered\"")
-  @Pattern(regexp = "^(?:[a-zA-Z0-9_'^&/+-])+(?:\\.(?:[a-zA-Z0-9_'^&/+-])+)"
-          + "*@(?:(?:\\[?(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))\\.)"
-          + "{3}(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\]?)|(?:[a-zA-Z0-9-]+\\.)"
-          + "+(?:[a-zA-Z]){2,}\\.?)$", message = "")
-  @Column(unique = true, name = "email")
-  private String email;
-
-  @NotNull(message = "First Name Should Be Entered")
-  @Size(min = MIN_SIZE, message = "Size Of ")
+  @NotNull(message = "First name should be entered")
+  @Size(min = MIN_SIZE, message = "First name size less then " + MIN_SIZE)
   @Column(name = "first_name")
   private String firstName;
 
   @Enumerated(EnumType.ORDINAL)
   private Gender gender;
 
-  @NotNull(message = "Last Name Should Be Entered")
-  @Size(min = MIN_SIZE, message = "Size Of ")
+  @NotNull(message = "Last name should be entered")
+  @Size(min = MIN_SIZE, message = "Last name size less then " + MIN_SIZE)
   @Column(name = "last_name")
   private String lastName;
 
-  @NotNull(message = "Nickname Should Be Entered")
-  @Size(min = MIN_SIZE, message = "")
+  @NotNull(message = "Nickname should be entered")
+  @Size(min = (MIN_SIZE + 1), message = "Nickname size less then" + (MIN_SIZE + 1))
   @Column(unique = true, name = "nickname")
   private String nickname;
-
-  @NotNull(message = "Password Should Be Entered")
-  @Pattern(regexp = "(?=^.{8,}$)((?=.*\\d)|(?=.*\\W+))(?![.\\n])(?=.*[A-Z])(?=.*[a-z]).*$", message = "")
-  @Column(name = "password")
-  @JsonProperty(access = Access.WRITE_ONLY)
-  private String password;
 
   @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
   @CollectionTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"))
@@ -93,6 +78,12 @@ public class User extends BaseEntity implements UserDetails {
   @JsonProperty(access = Access.WRITE_ONLY)
   public Collection<? extends GrantedAuthority> getAuthorities() {
     return null;
+  }
+
+  @Override
+  @JsonProperty(access = Access.WRITE_ONLY)
+  public String getPassword() {
+    return this.password;
   }
 
   @Override

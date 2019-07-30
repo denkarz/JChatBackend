@@ -1,8 +1,9 @@
 package com.denkarz.jcat.backend.service;
 
-import com.denkarz.jcat.backend.dto.AuthenticationRequestDto;
-import com.denkarz.jcat.backend.model.Role;
-import com.denkarz.jcat.backend.model.User;
+import com.denkarz.jcat.backend.controller.ControllerUtils;
+import com.denkarz.jcat.backend.model.user.AuthenticationUser;
+import com.denkarz.jcat.backend.model.user.Role;
+import com.denkarz.jcat.backend.model.user.User;
 import com.denkarz.jcat.backend.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.BindingResult;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -31,35 +33,43 @@ public class UserService implements UserDetailsService {
     return userFromDb.orElse(null);
   }
 
-  public ResponseEntity usrRegistration(User user) {
+  public ResponseEntity userRegistration(User user, BindingResult bindingResult) {
     Optional<User> userFromDb = userRepository.findByEmail(user.getEmail());
     if (userFromDb.isPresent()) {
       // ToDo: add logger for error
-      return ResponseEntity.status(HttpStatus.CONFLICT).body("user_exists");
+      return ResponseEntity.status(HttpStatus.CONFLICT).body("{\"emailError\": \"user_exists\"}");
     }
-    user.setPassword(passwordEncoder.encode(user.getPassword()));
     user.setActive(true);
-    user.setNickname(user.getId());
     // ToDo: replace for multiple roles
     user.setRoles(Collections.singleton(Role.USER));
-    try {
-      User savedUser = userRepository.save(user);
-      log.info("Add new user to database: {}", user);
-      return ResponseEntity.status(HttpStatus.OK).body(savedUser.getId());
-
-    } catch (Exception e) {
-      log.warn("Hibernate validation error:");
-      return ResponseEntity.status(HttpStatus.CONFLICT).body("validation_error");
+    if (bindingResult.hasErrors()) {
+      log.warn(ControllerUtils.getErrorsLog(bindingResult));
+      return ResponseEntity.status(HttpStatus.CONFLICT).body(ControllerUtils.getErrorsResponse(bindingResult));
     }
+    user.setPassword(passwordEncoder.encode(user.getPassword()));
+    User savedUser = userRepository.save(user);
+    // todo: refactor of duplicating id into nickname
+    savedUser.setNickname(savedUser.getId());
+    savedUser = userRepository.save(savedUser);
+    log.info("Add new user to database: {}", savedUser);
+    return ResponseEntity.status(HttpStatus.OK).body("{\"nickname\": \"" + savedUser.getNickname() + "\"}");
   }
 
   public boolean hasMail(String email) {
-    email = email.toLowerCase();
-    Optional<User> userFromDb = userRepository.findByEmail(email);
-    return userFromDb.isEmpty();
+    email = email.trim().toLowerCase();
+    if (!email.isBlank()) {
+      Optional<User> userFromDb = userRepository.findByEmail(email);
+      return userFromDb.isEmpty();
+    }
+    return false;
   }
 
-  public ResponseEntity userLogin(AuthenticationRequestDto authUser) {
+  public ResponseEntity userLogin(AuthenticationUser authUser, BindingResult bindingResult) {
+    if (bindingResult.hasErrors()) {
+      log.warn(ControllerUtils.getErrorsLog(bindingResult));
+      return ResponseEntity.status(HttpStatus.CONFLICT).body(ControllerUtils.getErrorsResponse(bindingResult));
+    }
+    authUser.setEmail(authUser.getEmail().trim().toLowerCase());
     Optional<User> userFromDb = userRepository.findByEmail(authUser.getEmail());
     if (userFromDb.isPresent() && passwordEncoder.matches(authUser.getPassword(), userFromDb.get().getPassword())) {
       // ToDo: add logger for error
@@ -67,10 +77,22 @@ public class UserService implements UserDetailsService {
       log.info("Login as {}", userFromDb.get());
       return ResponseEntity.status(HttpStatus.OK).body(userFromDb);
     }
-    return ResponseEntity.status(HttpStatus.CONFLICT).body("user_not_exists");
+    return ResponseEntity.status(HttpStatus.CONFLICT).body("{\"emailError\": \"user_not_exists\"}");
   }
 
   public Iterable<User> testRequest() {
     return userRepository.findAll();
+  }
+
+  public ResponseEntity registrationSetup(AuthenticationUser authUser, BindingResult bindingResult) {
+    if (bindingResult.hasErrors()) {
+      log.warn(ControllerUtils.getErrorsLog(bindingResult));
+      return ResponseEntity.status(HttpStatus.CONFLICT).body(ControllerUtils.getErrorsResponse(bindingResult));
+    }
+    authUser.setEmail(authUser.getEmail().trim().toLowerCase());
+    if (this.hasMail(authUser.getEmail())) {
+      return ResponseEntity.status(HttpStatus.OK).body("ok");
+    }
+    return ResponseEntity.status(HttpStatus.CONFLICT).body("{\"emailError\": \"user_exists\"}");
   }
 }

@@ -1,4 +1,4 @@
-package com.denkarz.jcat.backend.model;
+package com.denkarz.jcat.backend.model.user;
 
 import org.springframework.security.core.GrantedAuthority;
 
