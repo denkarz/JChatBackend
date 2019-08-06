@@ -12,7 +12,7 @@ import javax.validation.Valid;
 
 @RestController
 @CrossOrigin
-@RequestMapping("api/v1/auth")
+@RequestMapping("api/auth")
 public class LoginController {
   @Autowired
   private UserService userService;
@@ -32,7 +32,7 @@ public class LoginController {
     return userService.userRegistration(user, bindingResult);
   }
 
-//  @RequestMapping(value = "/forget", method = RequestMethod.GET, produces = "application/json")
+//  @RequestMapping(value = "/forgot_password", method = RequestMethod.GET, produces = "application/json")
 //  @ResponseBody
 //  User forget() {
 //    return null;

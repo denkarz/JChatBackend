@@ -5,11 +5,12 @@ import com.denkarz.jcat.backend.model.user.AuthenticationUser;
 import com.denkarz.jcat.backend.model.user.Role;
 import com.denkarz.jcat.backend.model.user.User;
 import com.denkarz.jcat.backend.repository.UserRepository;
+import com.denkarz.jcat.backend.security.jwt.JwtGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -26,9 +27,11 @@ public class UserService implements UserDetailsService {
   private UserRepository userRepository;
   @Autowired
   private BCryptPasswordEncoder passwordEncoder;
+  @Autowired
+  private JwtGenerator jwtGenerator;
 
   @Override
-  public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+  public User loadUserByUsername(String email) throws UsernameNotFoundException {
     Optional<User> userFromDb = userRepository.findByEmail(email);
     return userFromDb.orElse(null);
   }
@@ -51,8 +54,11 @@ public class UserService implements UserDetailsService {
     // todo: refactor of duplicating id into nickname
     savedUser.setNickname(savedUser.getId());
     savedUser = userRepository.save(savedUser);
+    String jwt = jwtGenerator.generate(savedUser);
     log.info("Add new user to database: {}", savedUser);
-    return ResponseEntity.status(HttpStatus.OK).body("{\"nickname\": \"" + savedUser.getNickname() + "\"}");
+    HttpHeaders responseHeaders = new HttpHeaders();
+    responseHeaders.add("Authorisation", "Token " + jwt);
+    return ResponseEntity.status(HttpStatus.OK).headers(responseHeaders).body("{\"nickname\": \"" + savedUser.getNickname() + "\"}");
   }
 
   public boolean hasMail(String email) {
@@ -73,9 +79,13 @@ public class UserService implements UserDetailsService {
     Optional<User> userFromDb = userRepository.findByEmail(authUser.getEmail());
     if (userFromDb.isPresent() && passwordEncoder.matches(authUser.getPassword(), userFromDb.get().getPassword())) {
       // ToDo: add logger for error
+
       userFromDb.get().setActive(true);
+      String jwt = jwtGenerator.generate(userFromDb.get());
       log.info("Login as {}", userFromDb.get());
-      return ResponseEntity.status(HttpStatus.OK).body(userFromDb);
+      HttpHeaders responseHeaders = new HttpHeaders();
+      responseHeaders.add("Authorisation", "Token " + jwt);
+      return ResponseEntity.status(HttpStatus.OK).headers(responseHeaders).body(userFromDb);
     }
     return ResponseEntity.status(HttpStatus.CONFLICT).body("{\"emailError\": \"user_not_found\"}");
   }

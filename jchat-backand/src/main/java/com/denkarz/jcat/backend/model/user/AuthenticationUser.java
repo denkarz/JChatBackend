@@ -6,9 +6,11 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
+@MappedSuperclass
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class AuthenticationUser extends BaseEntity {
