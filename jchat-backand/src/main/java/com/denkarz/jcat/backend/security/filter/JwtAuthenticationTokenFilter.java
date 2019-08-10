@@ -1,7 +1,8 @@
-package com.denkarz.jcat.backend.security.jwt;
+package com.denkarz.jcat.backend.security.filter;
 
 import com.denkarz.jcat.backend.model.JwtAuthenticationToken;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
@@ -13,10 +14,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Slf4j
+@Order(2)
 public class JwtAuthenticationTokenFilter extends AbstractAuthenticationProcessingFilter {
 
   public JwtAuthenticationTokenFilter() {
-    super("/api/v1/");
+    super("/api/v1/**");
   }
 
   @Override

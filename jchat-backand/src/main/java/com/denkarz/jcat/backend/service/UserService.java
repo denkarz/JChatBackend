@@ -58,7 +58,7 @@ public class UserService implements UserDetailsService {
     log.info("Add new user to database: {}", savedUser);
     HttpHeaders responseHeaders = new HttpHeaders();
     responseHeaders.add("Authorisation", "Token " + jwt);
-    return ResponseEntity.status(HttpStatus.OK).headers(responseHeaders).body("{\"nickname\": \"" + savedUser.getNickname() + "\"}");
+    return ResponseEntity.status(HttpStatus.OK).headers(responseHeaders).body(null);
   }
 
   public boolean hasMail(String email) {
@@ -84,8 +84,9 @@ public class UserService implements UserDetailsService {
       String jwt = jwtGenerator.generate(userFromDb.get());
       log.info("Login as {}", userFromDb.get());
       HttpHeaders responseHeaders = new HttpHeaders();
+//      responseHeaders.add("Access-Control-Expose-Headers", "Accept, Origin, Content-Type, Authorisation");
       responseHeaders.add("Authorisation", "Token " + jwt);
-      return ResponseEntity.status(HttpStatus.OK).headers(responseHeaders).body(userFromDb);
+      return ResponseEntity.status(HttpStatus.OK).headers(responseHeaders).body(null);
     }
     return ResponseEntity.status(HttpStatus.CONFLICT).body("{\"emailError\": \"user_not_found\"}");
   }
@@ -104,5 +105,24 @@ public class UserService implements UserDetailsService {
       return ResponseEntity.status(HttpStatus.OK).body("ok");
     }
     return ResponseEntity.status(HttpStatus.CONFLICT).body("{\"emailError\": \"email_in_use\"}");
+  }
+
+  public ResponseEntity getUser(String id) {
+    Optional<User> userFromDb = userRepository.findById(id);
+    if (userFromDb.isPresent()) {
+      return ResponseEntity.status(HttpStatus.OK).body(userFromDb);
+    }
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("user_not_found");
+  }
+
+  public ResponseEntity logout(String id) {
+    Optional<User> userFromDb = userRepository.findById(id);
+    if (userFromDb.isPresent()) {
+      User user = userFromDb.get();
+      user.setActive(false);
+      userRepository.save(user);
+      return ResponseEntity.status(HttpStatus.OK).body("ok");
+    }
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("user_not_found");
   }
 }

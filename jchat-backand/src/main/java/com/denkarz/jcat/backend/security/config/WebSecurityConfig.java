@@ -1,8 +1,9 @@
 package com.denkarz.jcat.backend.security.config;
 
+import com.denkarz.jcat.backend.security.filter.CORSFilter;
+import com.denkarz.jcat.backend.security.filter.JwtAuthenticationTokenFilter;
 import com.denkarz.jcat.backend.security.jwt.JwtAuthenticationEntryPoint;
 import com.denkarz.jcat.backend.security.jwt.JwtAuthenticationProvider;
-import com.denkarz.jcat.backend.security.jwt.JwtAuthenticationTokenFilter;
 import com.denkarz.jcat.backend.security.jwt.JwtSuccessHandler;
 import com.denkarz.jcat.backend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.util.Collections;
@@ -65,6 +67,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .and()
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
+    http.addFilterBefore(new CORSFilter(), ChannelProcessingFilter.class);
     http.addFilterBefore(authenticationTokenFilter(), UsernamePasswordAuthenticationFilter.class);
     http.headers().cacheControl();
   }
