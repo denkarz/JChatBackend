@@ -15,4 +15,9 @@ public interface UserRepository extends CrudRepository<User, String> {
           + " WHERE users.email = ?1", nativeQuery = true)
   Optional<User> findByEmail(String email);
 
+  @Query(value = "SELECT *"
+          + " FROM Users users"
+          + " WHERE users.id = ?1 or users.nickname = ?2", nativeQuery = true)
+  Optional<User> findByIdOrNick(String id, String nick);
+
 }

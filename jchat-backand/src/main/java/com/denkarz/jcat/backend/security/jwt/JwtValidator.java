@@ -7,7 +7,10 @@ import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Component
 public class JwtValidator {
@@ -16,22 +19,25 @@ public class JwtValidator {
   private String secret;
 
   public User validate(String token) {
-
-    User jwtUser = null;
+//todo error here
+    User jwtUser = new User();
     try {
       Claims body = Jwts.parser()
               .setSigningKey(secret)
               .parseClaimsJws(token)
               .getBody();
 
-      jwtUser = new User();
-
-      jwtUser.setEmail(body.getSubject());
       jwtUser.setId((String) body.get("user_id"));
-      String s_role = (String) body.get("role");
-      jwtUser.setRoles(Collections.singleton(Role.valueOf(s_role.toUpperCase())));
+      jwtUser.setNickname((String) body.get("user_nick"));
+      List rolesList = body.get("role", List.class);
+      Set<Role> roles = new HashSet<>();
+      for (Object role : rolesList) {
+        roles.add(Role.valueOf(role.toString()));
+      }
+      jwtUser.setRoles(roles);
     } catch (Exception e) {
-      System.out.println(e);
+      System.out.println(e.getClass().getCanonicalName());
+      System.out.println("jwt_validator_error " + Arrays.toString(e.getStackTrace()));
     }
 
     return jwtUser;

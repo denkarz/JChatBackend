@@ -6,23 +6,25 @@ import com.denkarz.jcat.backend.service.UserService;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+
 @RestController
-@CrossOrigin
-@RequestMapping("api/v1/test")
-public class CommonController {
+@RequestMapping("api/v1/admin")
+@PreAuthorize("hasAuthority('ADMIN')")
+public class AdminController {
   @Autowired
   private UserService userService;
   @Autowired
   private UserRepository userRepository;
 
-  // Метод для отладки
-  @RequestMapping(value = "/get", method = RequestMethod.GET, produces = "application/json")
+  @GetMapping(value = "/get_all_users", produces = "application/json")
   @ResponseBody
-  Iterable<User> hello() {
+  Iterable<User> get_all() {
     return userService.getAllUsers();
   }
+
 
   @PostMapping(value = "/update_roles", produces = "application/json")
   public ResponseEntity updateRoles(@RequestBody JSONObject json) {

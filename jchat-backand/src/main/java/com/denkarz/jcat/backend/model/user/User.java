@@ -8,11 +8,13 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.util.*;
 
@@ -52,6 +54,15 @@ public class User extends AuthenticationUser implements UserDetails {
   @Column(unique = true, name = "nickname")
   private String nickname;
 
+  @Pattern(regexp = "^((8|\\+7)[\\- ]?)?(\\(?\\d{3}\\)?[\\- ]?)?[\\d\\- ]{7,10}$", message = "Phone isnt correct")
+  @Column(unique = true, name = "phone")
+  private String phone;
+
+  // boolean blocked
+  // User[] friends
+  // Posts[] posts
+  // Date lastVisited
+
   @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
   @CollectionTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"))
   @Enumerated(EnumType.STRING)
@@ -76,8 +87,13 @@ public class User extends AuthenticationUser implements UserDetails {
 
   @Override
   @JsonProperty(access = Access.WRITE_ONLY)
-  public Collection<? extends GrantedAuthority> getAuthorities() {
-    return null;
+  public Set<GrantedAuthority> getAuthorities() {
+    Set<GrantedAuthority> authorities = new HashSet<GrantedAuthority>();
+    System.out.println(this.roles);
+    for (Role temp : this.roles) {
+      authorities.add(new SimpleGrantedAuthority(temp.name()));
+    }
+    return authorities;
   }
 
   @Override

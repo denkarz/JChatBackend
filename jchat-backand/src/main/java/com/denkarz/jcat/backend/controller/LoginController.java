@@ -24,7 +24,6 @@ public class LoginController {
     return userService.userLogin(authUser, bindingResult);
   }
 
-  @CrossOrigin
   @PostMapping(value = "/sign_up", produces = "application/json")
   @ResponseBody
   public ResponseEntity signUp(@RequestBody @Valid User user,

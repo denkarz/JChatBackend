@@ -11,7 +11,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import java.util.Set;
 
 @Component
 public class JwtAuthenticationProvider extends AbstractUserDetailsAuthenticationProvider {
@@ -35,7 +35,7 @@ public class JwtAuthenticationProvider extends AbstractUserDetailsAuthentication
       throw new RuntimeException("JWT Token is incorrect");
     }
     //todo: refactor cast to list
-    List<GrantedAuthority> grantedAuthorities = (List<GrantedAuthority>) jwtUser.getAuthorities();
+    Set<GrantedAuthority> grantedAuthorities = jwtUser.getAuthorities();
     return new JwtUserDetails(jwtUser.getEmail(), jwtUser.getId(),
             token,
             grantedAuthorities);

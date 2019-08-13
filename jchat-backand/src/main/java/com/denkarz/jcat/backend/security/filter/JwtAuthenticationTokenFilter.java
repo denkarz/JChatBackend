@@ -12,6 +12,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
 
 @Slf4j
 @Order(2)
@@ -31,6 +32,7 @@ public class JwtAuthenticationTokenFilter extends AbstractAuthenticationProcessi
       return getAuthenticationManager().authenticate(token);
 
     } catch (RuntimeException e) {
+      System.out.println(Arrays.toString(e.getStackTrace()));
       log.warn("Token is missing");
     }
     return null;

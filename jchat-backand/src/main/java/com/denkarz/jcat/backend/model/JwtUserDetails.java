@@ -3,18 +3,17 @@ package com.denkarz.jcat.backend.model;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.Set;
 
 public class JwtUserDetails implements UserDetails {
 
   private String userName;
   private String token;
   private String id;
-  private Collection<? extends GrantedAuthority> authorities;
+  private Set<GrantedAuthority> authorities;
 
 
-  public JwtUserDetails(String userName, String id, String token, List<GrantedAuthority> grantedAuthorities) {
+  public JwtUserDetails(String userName, String id, String token, Set<GrantedAuthority> grantedAuthorities) {
 
     this.userName = userName;
     this.id = id;
@@ -23,7 +22,7 @@ public class JwtUserDetails implements UserDetails {
   }
 
   @Override
-  public Collection<? extends GrantedAuthority> getAuthorities() {
+  public Set<GrantedAuthority> getAuthorities() {
     return authorities;
   }
 
