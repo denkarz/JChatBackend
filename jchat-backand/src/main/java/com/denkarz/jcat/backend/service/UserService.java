@@ -48,6 +48,7 @@ public class UserService implements UserDetailsService {
       json.put("emailError", "email_in_use");
       return ResponseEntity.status(HttpStatus.CONFLICT).body(json);
     }
+
     user.setActive(true);
     user.setRoles(Collections.singleton(Role.USER));
     if (bindingResult.hasErrors()) {
