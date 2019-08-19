@@ -204,6 +204,26 @@ public class UserService implements UserDetailsService {
     return ResponseEntity.status(HttpStatus.CONFLICT).body(jsonError);
   }
 
+  public ResponseEntity updateActivationCode(String id) {
+    Optional<User> userFromDb = userRepository.findById(id);
+    if (userFromDb.isPresent()) {
+      // ToDo: add logger for error
+      User user = userFromDb.get();
+      user.setActivationCode(UUID.randomUUID().toString());
+      userRepository.save(user);
+
+      //todo replase email hardcode
+      String message = String.format("Hello %s %s! \n" +
+                      "Welcome to JTalki. Please, visit next link: http://localhost:8080/activate/%s",
+              user.getFirstName(), user.getLastName(), user.getActivationCode());
+      notificationService.sendMailNotification(user.getEmail(), "Activation Code", message);
+      return ResponseEntity.status(HttpStatus.OK).body("ok");
+    }
+    JSONObject json = new JSONObject();
+    json.put("emailError", "user_not_found");
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(json);
+  }
+
   public ResponseEntity activationByCode(String code) {
     Optional<User> userFromDb = userRepository.findByActivationCode(code);
     if (userFromDb.isPresent()) {

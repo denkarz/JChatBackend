@@ -38,6 +38,16 @@ public class UserController {
     return userService.logout(userId);
   }
 
+  @PostMapping(value = "/update_activation_code", produces = "application/json")
+  @ResponseBody
+  public ResponseEntity updateActivationCode(@RequestBody String id) throws IOException {
+    // todo refactor to a jwt token in header
+    Map map;
+    map = new ObjectMapper().readValue(id, Map.class);
+    String userId = map.get("id").toString();
+    return userService.updateActivationCode(userId);
+  }
+
   @PostMapping(value = "/update", produces = "application/json")
   @ResponseBody
   public ResponseEntity signUp(@RequestBody @Valid User user,
