@@ -22,8 +22,9 @@ public class AuthenticationUser extends BaseEntity {
   @Column(unique = true, name = "email")
   protected String email;
 
+  //todo add all alphabethic chars via unicode (not [a-zа-я])
   @NotNull(message = "Password should be entered")
-  @Pattern(regexp = "(?=^.{8,}$)((?=.*\\d)|(?=.*\\W+))(?![.\\n])(?=.*[A-Z])(?=.*[a-z]).*$",
+  @Pattern(regexp = "(?=^.{8,}$)((?=.*\\d)|(?=.*\\W+))(?![.\\n])(?=.*[A-ZА-Я])(?=.*[a-zа-я]).*$",
           message = "Password must be 8+ chars, has at least one uppercase char, one lowercase char and one digit")
   @Column(name = "password")
   @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)

@@ -20,6 +20,7 @@ import org.springframework.validation.BindingResult;
 
 import java.util.Collections;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -30,6 +31,8 @@ public class UserService implements UserDetailsService {
   private BCryptPasswordEncoder passwordEncoder;
   @Autowired
   private JwtGenerator jwtGenerator;
+  @Autowired
+  private NotificationService notificationService;
 
   @Override
   public User loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -51,11 +54,19 @@ public class UserService implements UserDetailsService {
       log.warn(ControllerUtils.getErrorsLog(bindingResult));
       return ResponseEntity.status(HttpStatus.CONFLICT).body(ControllerUtils.getErrorsResponse(bindingResult));
     }
+    user.setActivationCode(UUID.randomUUID().toString());
     user.setPassword(passwordEncoder.encode(user.getPassword()));
     User savedUser = userRepository.save(user);
     // todo: refactor of duplicating id into nickname
     savedUser.setNickname(savedUser.getId());
     savedUser = userRepository.save(savedUser);
+
+//todo replase email hardcode
+    String message = String.format("Hello %s %s! \n" +
+            "Welcome to JTalki. Please, visit next link: http://localhost:8080/activate/%s",
+            savedUser.getFirstName(), savedUser.getLastName(), savedUser.getActivationCode());
+    notificationService.sendMailNotification(savedUser.getEmail(), "Activation Code", message);
+
     String jwt = jwtGenerator.generate(savedUser);
     log.info("Add new user to database: {}", savedUser);
     HttpHeaders responseHeaders = new HttpHeaders();
@@ -103,9 +114,10 @@ public class UserService implements UserDetailsService {
     Optional<User> userFromDb = userRepository.findByEmail(authUser.getEmail());
     if (userFromDb.isPresent() && passwordEncoder.matches(authUser.getPassword(), userFromDb.get().getPassword())) {
       // ToDo: add logger for error
-
-      userFromDb.get().setActive(true);
-      String jwt = jwtGenerator.generate(userFromDb.get());
+      User user = userFromDb.get();
+      user.setActive(true);
+      String jwt = jwtGenerator.generate(user);
+      userRepository.save(user);
       log.info("Login as {}", userFromDb.get());
       HttpHeaders responseHeaders = new HttpHeaders();
       responseHeaders.add("Authorisation", "Token " + jwt);
@@ -113,7 +125,7 @@ public class UserService implements UserDetailsService {
     }
     JSONObject json = new JSONObject();
     json.put("emailError", "user_not_found");
-    return ResponseEntity.status(HttpStatus.CONFLICT).body(json);
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(json);
   }
 
   public Iterable<User> getAllUsers() {
@@ -141,7 +153,7 @@ public class UserService implements UserDetailsService {
     }
     JSONObject json = new JSONObject();
     json.put("emailError", "user_not_found");
-    return ResponseEntity.status(HttpStatus.CONFLICT).body(json);
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(json);
   }
 
   public ResponseEntity logout(String id) {
@@ -154,7 +166,7 @@ public class UserService implements UserDetailsService {
     }
     JSONObject json = new JSONObject();
     json.put("emailError", "user_not_found");
-    return ResponseEntity.status(HttpStatus.CONFLICT).body(json);
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(json);
   }
 
   public ResponseEntity updateRoles(JSONObject json) {
@@ -182,12 +194,66 @@ public class UserService implements UserDetailsService {
         System.out.println("no roles exists");
         JSONObject jsonError = new JSONObject();
         jsonError.put("rolesError", "empty_user_roles");
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(jsonError);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(jsonError);
       }
 
     }
     JSONObject jsonError = new JSONObject();
     jsonError.put("emailError", "user_not_found");
     return ResponseEntity.status(HttpStatus.CONFLICT).body(jsonError);
+  }
+
+  public ResponseEntity activationByCode(String code) {
+    Optional<User> userFromDb = userRepository.findByActivationCode(code);
+    if (userFromDb.isPresent()) {
+      User user = userFromDb.get();
+      user.setActivationCode(null);
+      String jwt = jwtGenerator.generate(user);
+      userRepository.save(user);
+      HttpHeaders responseHeaders = new HttpHeaders();
+      responseHeaders.add("Authorisation", "Token " + jwt);
+      return ResponseEntity.status(HttpStatus.OK).headers(responseHeaders).body(null);
+    }
+    JSONObject json = new JSONObject();
+    json.put("emailError", "user_not_found");
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(json);
+  }
+
+  public ResponseEntity forgot(String userEmail) {
+    System.out.println(userEmail);
+    Optional<User> userFromDb = userRepository.findByEmail(userEmail);
+    if (userFromDb.isPresent()) {
+      User user = userFromDb.get();
+      user.setResetPassword(UUID.randomUUID().toString());
+      userRepository.save(user);
+
+//todo replase email hardcode
+      String message = String.format("Hello %s %s! \n" +
+                      "Welcome to JTalki. Please, visit next link: http://localhost:8080/reset_password/%s",
+              user.getFirstName(), user.getLastName(), user.getResetPassword());
+      notificationService.sendMailNotification(user.getEmail(), "Reset Password", message);
+      return ResponseEntity.status(HttpStatus.OK).body("ok");
+    }
+    JSONObject json = new JSONObject();
+    json.put("emailError", "user_not_found");
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(json);
+  }
+
+  public ResponseEntity resetPasswordByCode(String code, String userPassword) {
+    Optional<User> userFromDb = userRepository.findByResetPasswordCode(code);
+    if (userFromDb.isPresent()) {
+      User user = userFromDb.get();
+      user.setPassword(passwordEncoder.encode(userPassword));
+      user.setActive(true);
+      user.setResetPassword(null);
+      String jwt = jwtGenerator.generate(user);
+      userRepository.save(user);
+      HttpHeaders responseHeaders = new HttpHeaders();
+      responseHeaders.add("Authorisation", "Token " + jwt);
+      return ResponseEntity.status(HttpStatus.OK).headers(responseHeaders).body(null);
+    }
+    JSONObject json = new JSONObject();
+    json.put("emailError", "user_not_found");
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(json);
   }
 }

@@ -20,4 +20,13 @@ public interface UserRepository extends CrudRepository<User, String> {
           + " WHERE users.id = ?1 or users.nickname = ?2", nativeQuery = true)
   Optional<User> findByIdOrNick(String id, String nick);
 
+  @Query(value = "SELECT *"
+          + " FROM Users users"
+          + " WHERE users.activation_code = ?1", nativeQuery = true)
+  Optional<User> findByActivationCode(String code);
+
+  @Query(value = "SELECT *"
+          + " FROM Users users"
+          + " WHERE users.reset_password = ?1", nativeQuery = true)
+  Optional<User> findByResetPasswordCode(String code);
 }

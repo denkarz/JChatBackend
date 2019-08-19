@@ -58,6 +58,13 @@ public class User extends AuthenticationUser implements UserDetails {
   @Column(unique = true, name = "phone")
   private String phone;
 
+  @Column(unique = true, name = "activation_code")
+  private String activationCode;
+
+  @Column(unique = true, name = "reset_password")
+  private String resetPassword;
+
+  // String avatar_url
   // boolean blocked
   // User[] friends
   // Posts[] posts
