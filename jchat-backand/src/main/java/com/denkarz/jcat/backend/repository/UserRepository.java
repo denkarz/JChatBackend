@@ -1,9 +1,11 @@
 package com.denkarz.jcat.backend.repository;
 
 import com.denkarz.jcat.backend.model.user.User;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -29,4 +31,27 @@ public interface UserRepository extends CrudRepository<User, String> {
           + " FROM Users users"
           + " WHERE users.reset_password = ?1", nativeQuery = true)
   Optional<User> findByResetPasswordCode(String code);
+
+  @Modifying
+  @Transactional
+  @Query(value = "begin;\n" +
+          "DELETE FROM\n" +
+          "  user_role\n" +
+          "WHERE\n" +
+          "  user_id in (\n" +
+          "    SELECT\n" +
+          "      id\n" +
+          "    FROM\n" +
+          "      users\n" +
+          "    WHERE\n" +
+          "      created < (NOW() - INTERVAL '2 days')\n" +
+          "      AND activation_code IS NOT NULL\n" +
+          "  );\n" +
+          "DELETE FROM\n" +
+          "  users\n" +
+          "WHERE\n" +
+          "  created < (NOW() - INTERVAL '2 days')\n" +
+          "  AND activation_code IS NOT NULL;" +
+          "commit;\n", nativeQuery = true)
+  void deleteAllNonActivated();
 }

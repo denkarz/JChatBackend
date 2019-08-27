@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -40,6 +42,11 @@ public class UserService implements UserDetailsService {
     return userFromDb.orElse(null);
   }
 
+  @Scheduled(cron = "59 59 23 * * ?")
+  public void deleteNonActivated() {
+    System.out.println(new Date().toLocaleString());
+    userRepository.deleteAllNonActivated();
+  }
   public ResponseEntity userRegistration(User user, BindingResult bindingResult) {
     Optional<User> userFromDb = userRepository.findByIdOrNick(user.getId(), user.getNickname());
     if (userFromDb.isPresent()) {
